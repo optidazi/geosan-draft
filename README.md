@@ -8,7 +8,9 @@ Site: https://optidazi.github.io/geosan-draft/
 
 - **Admin** (one account): moves everyone through the steps, edits teams, captains and players, creates captain logins, runs the lottery, can pick for any team, can undo picks and reset.
 - **Captains**: sign in with the login the admin created, watch the lottery live, and can draft only for their own team when it's their turn.
-- Anyone else who signs in sees nothing.
+- **Spectators**: anyone with the link can click **Watch the draft** (or open https://optidazi.github.io/geosan-draft/#watch) and follow everything live without logging in. They can't change anything. Admins can copy the spectator link on the Teams step.
+
+Captain login emails are kept in a separate admin-only document (`draft/private`), so spectators never see them.
 
 Firestore security rules (`firestore.rules`) enforce these limits on Google's servers, so captains can't get around them by editing the page.
 

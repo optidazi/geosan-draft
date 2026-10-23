@@ -88,6 +88,11 @@ const I18N = {
     setup_title: "Connect Firebase first",
     setup_lead: "This draft needs a Firebase project for logins and live sync. Fill in firebase-config.js and firestore.rules as described in the README, then reload.",
     title_turn: "🏀 Your pick!",
+    watch: "Watch the draft",
+    watch_hint: "No login needed. You'll see everything live but can't change anything.",
+    role_spectator: "Spectator",
+    not_started: "The draft hasn't been set up yet. This page updates by itself when it starts.",
+    copy_watch: "Copy spectator link",
   },
   mn: {
     appSub: "Компанийн сагсан бөмбөгийн тэмцээн · Тоглогчийн драфт",
@@ -172,6 +177,11 @@ const I18N = {
     setup_title: "Эхлээд Firebase холбоно уу",
     setup_lead: "Энэ драфт нэвтрэх болон шууд синк хийхэд Firebase төсөл шаарддаг. README-д заасны дагуу firebase-config.js, firestore.rules-г бөглөөд дахин ачаална уу.",
     title_turn: "🏀 Таны ээлж!",
+    watch: "Драфтыг үзэх",
+    watch_hint: "Нэвтрэх шаардлагагүй. Бүгдийг шууд харах боловч өөрчлөх боломжгүй.",
+    role_spectator: "Үзэгч",
+    not_started: "Драфт хараахан бэлэн болоогүй байна. Эхлэхэд энэ хуудас автоматаар шинэчлэгдэнэ.",
+    copy_watch: "Үзэгчийн холбоос хуулах",
   },
 };
 
@@ -189,17 +199,20 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const cfgReady = !!firebaseConfig?.apiKey && !firebaseConfig.apiKey.startsWith("PASTE") && !ADMIN_UID.startsWith("PASTE");
-let fbApp, auth, db, ref, secAuth;
+let fbApp, auth, db, ref, privRef, secAuth;
 if (cfgReady) {
   fbApp = initializeApp(firebaseConfig);
   auth = getAuth(fbApp);
   db = getFirestore(fbApp);
-  ref = doc(db, "draft", "main");
+  ref = doc(db, "draft", "main");       // readable by anyone, including spectators
+  privRef = doc(db, "draft", "private"); // admin only: captain login emails
 }
 
 let lang = "en";
 try { lang = localStorage.getItem("gd-lang") || "en"; } catch {}
 let user = null, authReady = false, D = null, docState = "loading", unsub = null, lastKey = "", lastNewPick = -1;
+let spectator = location.hash === "#watch", privEmails = {}, privUnsub = null, migrating = false;
+const watchUrl = () => location.origin + location.pathname + "#watch";
 let filter = { q: "", pos: "all" }, uidMode = new Set(), busy = false;
 
 const t = (k, v = {}) => {
@@ -240,7 +253,7 @@ function seedDoc() {
   SAMPLE_NAMES.forEach((n, i) => { players[uid()] = { name: n, pos: POS_CYCLE[i % POS_CYCLE.length], o: i }; });
   return {
     stage: "teams", snake: true,
-    teams: SAMPLE_TEAMS.map((n, i) => ({ id: "t" + i, name: n, captain: "", email: "", color: COLORS[i] })),
+    teams: SAMPLE_TEAMS.map((n, i) => ({ id: "t" + i, name: n, captain: "", color: COLORS[i] })),
     captains: {}, players, lottery: null, pickOrder: [], picks: [], draftedIds: [], turnStartedAt: null,
   };
 }
@@ -313,8 +326,9 @@ async function createCaptainLogin(teamId, email, pw) {
     const cred = await createUserWithEmailAndPassword(secAuth, email, pw);
     const newUid = cred.user.uid;
     await signOut(secAuth);
-    const ok = await adminSave(d => { d.captains[teamId] = newUid; d.teams.find(x => x.id === teamId).email = email; });
+    const ok = await adminSave(d => { d.captains[teamId] = newUid; });
     if (!ok) return;
+    await setDoc(privRef, { emails: { [teamId]: email } }, { merge: true });
     const tm = team(teamId);
     modal(`<h3>${esc(t("login_created_title"))}</h3><p>${esc(t("login_created", { t: tm.name }))}</p>
       <div class="pwbox" id="credBox">${esc(location.origin + location.pathname)}<br>${esc(t("email"))}: ${esc(email)}<br>${esc(t("password"))}: ${esc(pw)}</div>
@@ -328,20 +342,38 @@ async function createCaptainLogin(teamId, email, pw) {
 }
 
 // ---------- auth + live data ----------
+function subscribe() {
+  unsub?.(); privUnsub?.(); unsub = privUnsub = null; D = null; privEmails = {}; lastKey = "";
+  if (user || spectator) {
+    docState = "loading";
+    unsub = onSnapshot(ref, snap => {
+      const prev = D;
+      D = snap.exists() ? snap.data() : null;
+      docState = D ? "ok" : "missing";
+      render();
+      if (D && prev) liveEffects(prev);
+      if (isAdmin()) migrateEmails();
+    }, err => { docState = err.code === "permission-denied" ? "denied" : "error"; D = null; render(); });
+    if (isAdmin()) privUnsub = onSnapshot(privRef, s => { privEmails = s.data()?.emails || {}; lastKey = ""; render(); }, () => {});
+  }
+  render();
+}
+// drafts created before spectator mode kept captain emails on the public doc
+async function migrateEmails() {
+  if (migrating || !D?.teams?.some(tm => tm.email)) return;
+  migrating = true;
+  try {
+    const moved = Object.fromEntries(D.teams.filter(tm => tm.email).map(tm => [tm.id, tm.email]));
+    await setDoc(privRef, { emails: moved }, { merge: true });
+    await adminSave(d => { d.teams.forEach(tm => delete tm.email); });
+  } catch (e) { toast(t("save_err", { e: e.code || e.message })); }
+  finally { migrating = false; }
+}
 if (cfgReady) {
   onAuthStateChanged(auth, u => {
-    user = u; authReady = true; unsub?.(); unsub = null; D = null; lastKey = "";
-    if (u) {
-      docState = "loading";
-      unsub = onSnapshot(ref, snap => {
-        const prev = D;
-        D = snap.exists() ? snap.data() : null;
-        docState = D ? "ok" : "missing";
-        render();
-        if (D && prev) liveEffects(prev);
-      }, err => { docState = err.code === "permission-denied" ? "denied" : "error"; D = null; render(); });
-    }
-    render();
+    user = u; authReady = true;
+    if (u) spectator = false;
+    subscribe();
   });
 }
 function liveEffects(prev) {
@@ -367,25 +399,25 @@ function render() {
   let key;
   if (!cfgReady) key = "setup";
   else if (!authReady) key = "auth-loading";
-  else if (!user) key = "login";
+  else if (!user && !spectator) key = "login";
   else if (docState !== "ok") key = docState;
   else {
     // the lottery "drawing" flag and the shot-clock timestamp update in place, not via re-render
     const { turnStartedAt, lottery, ...rest } = D;
     key = JSON.stringify([rest, lottery?.draws, lottery?.tickets?.length, uidMode.size, filter.pos]);
   }
-  key += "|" + lang + "|" + (user?.uid || "");
+  key += "|" + lang + "|" + (user?.uid || (spectator ? "spectator" : ""));
   if (key !== lastKey) {
     lastKey = key;
     const keep = [...m.querySelectorAll("input[id], textarea[id], select[id]")].filter(el => el.dataset.local != null || el === document.activeElement)
       .map(el => ({ id: el.id, v: el.value, f: el === document.activeElement, s: el.selectionStart, e: el.selectionEnd }));
     stopDrum();
     if (!cfgReady) renderSetup(m);
-    else if (user === null && authReady) renderLogin(m);
+    else if (!user && !spectator && authReady) renderLogin(m);
     else if (!authReady || docState === "loading") m.innerHTML = `<div class="card done-banner"><p>${esc(t("loading"))}</p></div>`;
     else if (docState === "missing") m.innerHTML = isAdmin()
       ? `<section class="panel"><div class="card done-banner"><div style="font-size:42px">🏀</div><p style="margin:0;font-size:17px">${esc(t("no_draft_admin"))}</p><button type="button" class="btn primary big" id="createDraft">${esc(t("create_draft"))}</button></div></section>`
-      : `<section class="panel"><div class="card done-banner"><p style="margin:0;font-size:17px">${esc(t("no_access"))}</p></div></section>`;
+      : `<section class="panel"><div class="card done-banner"><div style="font-size:42px">🏀</div><p style="margin:0;font-size:17px">${esc(t("not_started"))}</p></div></section>`;
     else if (docState !== "ok") m.innerHTML = `<section class="panel"><div class="card done-banner"><div style="font-size:42px">🔒</div><p style="margin:0;font-size:17px">${esc(docState === "denied" ? t("no_access") : t("save_err", { e: docState }))}</p></div></section>`;
     else ({ teams: renderTeams, players: renderPlayers, lottery: renderLottery, draft: renderDraft, results: renderResults })[D.stage](m);
     for (const k of keep) {
@@ -410,6 +442,8 @@ function renderChrome() {
     const role = isAdmin() ? `<span class="role admin">${esc(t("role_admin"))}</span>`
       : `<span class="role" title="${esc(user.email)}">${esc(mt ? t("role_captain", { t: team(mt).name }) : t("role_none"))}</span>`;
     ub.innerHTML = `${role}<button type="button" class="btn ghost" id="signOut">${esc(t("signout"))}</button>`;
+  } else if (spectator) {
+    ub.innerHTML = `<span class="role">👀 ${esc(t("role_spectator"))}</span><button type="button" class="btn ghost" id="toLogin">${esc(t("signin"))}</button>`;
   } else ub.innerHTML = "";
   const nav = $("#steps");
   if (!D) { nav.hidden = true; return; }
@@ -433,7 +467,11 @@ function renderLogin(m) {
     <div class="field"><label for="liPw">${esc(t("password"))}</label><input class="input" id="liPw" data-local type="password" autocomplete="current-password" required></div>
     <p class="err" id="liErr" role="alert"></p>
     <button class="btn primary big" type="submit" id="liBtn">${esc(t("signin"))}</button>
-  </form></section>`;
+  </form>
+  <div class="auth" style="margin-top:0;text-align:center;justify-items:center">
+    <button type="button" class="btn big" id="watchBtn">👀 ${esc(t("watch"))}</button>
+    <p style="font-size:13px">${esc(t("watch_hint"))}</p>
+  </div></section>`;
 }
 function gate(msg, step, label) {
   return `<section class="panel"><div class="card done-banner"><div style="font-size:42px">🏀</div><p style="margin:0;font-size:17px">${esc(msg)}</p>
@@ -444,7 +482,8 @@ function gate(msg, step, label) {
 function renderTeams(m, movedId) {
   const admin = isAdmin(), locked = draws().length > 0;
   m.innerHTML = `<section class="panel">
-    <div class="head"><div><h2>${esc(t("teams_title"))}</h2><p>${esc(t("teams_lead"))}</p></div></div>
+    <div class="head"><div><h2>${esc(t("teams_title"))}</h2><p>${esc(t("teams_lead"))}</p></div>
+      ${admin ? `<button type="button" class="btn" id="copyWatch">👀 ${esc(t("copy_watch"))}</button>` : ""}</div>
     ${admin && locked ? `<div class="note">🔒 ${esc(t("locked"))}</div>` : ""}
     <div class="teams">${D.teams.map((tm, i) => {
       const n = ticketsFor(i), pct = Math.round(n / 15 * 1000) / 10;
@@ -467,7 +506,7 @@ function renderTeams(m, movedId) {
           <button type="button" class="btn icon" data-move="${i}" data-dir="1" ${i === 4 || locked ? "disabled" : ""} aria-label="${esc(t("move_down"))}" title="${esc(t("move_down"))}">▼</button>` : ""}
         </div>
         ${admin ? `<div class="login-row"><span class="lbl">${esc(t("login_col"))}</span>${linked
-          ? `<span class="ok">✓ ${esc(t("login_ready", { e: tm.email || D.captains[tm.id] }))}</span><button type="button" class="btn ghost danger" data-unlink="${tm.id}">${esc(t("unlink"))}</button>`
+          ? `<span class="ok">✓ ${esc(t("login_ready", { e: privEmails[tm.id] || tm.email || D.captains[tm.id] }))}</span><button type="button" class="btn ghost danger" data-unlink="${tm.id}">${esc(t("unlink"))}</button>`
           : uidMode.has(tm.id)
             ? `<span class="hint">${esc(t("email_in_use"))}</span>
                <input class="input" id="lu-${tm.id}" data-local placeholder="${esc(t("uid"))}" aria-label="${esc(t("uid"))}" autocomplete="off">
@@ -785,6 +824,9 @@ document.addEventListener("click", e => {
   const el = e.target.closest("button"); if (!el || el.disabled) return;
   if (el.dataset.lang) { lang = el.dataset.lang; try { localStorage.setItem("gd-lang", lang); } catch {} render(); return; }
   if (el.id === "signOut") return signOut(auth);
+  if (el.id === "watchBtn") { spectator = true; history.replaceState(null, "", "#watch"); subscribe(); return; }
+  if (el.id === "toLogin") { spectator = false; history.replaceState(null, "", location.pathname); subscribe(); return; }
+  if (el.id === "copyWatch") return copyText(watchUrl());
   if (el.id === "createDraft") return setDoc(ref, seedDoc()).catch(err => toast(t("save_err", { e: err.code })));
   if (el.dataset.step) { if (isAdmin() && el.dataset.step !== D.stage) setStage(el.dataset.step); return; }
   if (el.dataset.fpos) { filter.pos = el.dataset.fpos; document.querySelectorAll("[data-fpos]").forEach(b => b.setAttribute("aria-pressed", b === el)); renderPool(); return; }
@@ -815,7 +857,14 @@ document.addEventListener("click", e => {
     adminSave(d => { d.captains[id] = v; }).then(ok => { if (ok) { uidMode.delete(id); lastKey = ""; render(); } });
     return;
   }
-  if (el.dataset.unlink) { const id = el.dataset.unlink; return confirmBox(t("unlink_q"), t("unlink"), () => adminSave(d => { delete d.captains[id]; d.teams.find(x => x.id === id).email = ""; })); }
+  if (el.dataset.unlink) {
+    const id = el.dataset.unlink;
+    return confirmBox(t("unlink_q"), t("unlink"), async () => {
+      if (!await adminSave(d => { delete d.captains[id]; delete d.teams.find(x => x.id === id).email; })) return;
+      const { [id]: _, ...rest } = privEmails;
+      setDoc(privRef, { emails: rest }).catch(e => toast(t("save_err", { e: e.code })));
+    });
+  }
   if (el.dataset.premove) { const id = el.dataset.premove; adminSave(d => { if (!d.draftedIds.includes(id)) delete d.players[id]; }); return; }
   if (el.id === "clearPlayers") return confirmBox(t("clear_players") + "?", t("clear_players"), () => adminSave(d => {
     for (const id of Object.keys(d.players)) if (!d.draftedIds.includes(id)) delete d.players[id];
