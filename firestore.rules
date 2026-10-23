@@ -1,0 +1,48 @@
+rules_version = '2';
+
+// Geosan Cup draft. Paste into Firebase console → Firestore Database → Rules, after
+// replacing PASTE_ADMIN_UID with the admin's User UID (Authentication → Users).
+//
+// - The admin can read and change everything.
+// - A captain (a UID listed in the draft's `captains` map) can read the draft and can
+//   only append one pick: for their own team, when it is their turn, of an undrafted player.
+// - Anyone else, including people who sign up on their own, can't read or write anything.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == 'PASTE_ADMIN_UID';
+    }
+
+    function isCaptain(d) {
+      return request.auth != null && request.auth.uid in d.captains.values();
+    }
+
+    function validCaptainPick() {
+      let b = resource.data;
+      let a = request.resource.data;
+      let n = b.picks.size();
+      let tid = b.pickOrder[n];
+      let p = a.picks[n];
+      return b.stage == 'draft'
+        && n < b.pickOrder.size()
+        && b.captains[tid] == request.auth.uid
+        && a.diff(b).affectedKeys().hasOnly(['picks', 'draftedIds', 'turnStartedAt'])
+        && a.picks.size() == n + 1
+        && (n == 0 || a.picks[0:n] == b.picks)
+        && p.keys().hasOnly(['playerId', 'teamId', 'by'])
+        && p.teamId == tid
+        && p.by == request.auth.uid
+        && p.playerId in b.players
+        && !(p.playerId in b.draftedIds)
+        && a.draftedIds == b.draftedIds.concat([p.playerId])
+        && a.turnStartedAt == request.time;
+    }
+
+    match /draft/main {
+      allow read: if isAdmin() || isCaptain(resource.data);
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (isCaptain(resource.data) && validCaptainPick());
+    }
+  }
+}
