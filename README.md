@@ -19,7 +19,7 @@ Firestore security rules (`firestore.rules`) enforce these limits on Google's se
 3. **Authentication → Users → Add user**: enter your own (admin) email and a password. Copy the **User UID** shown in the list.
 4. **Authentication → Settings → Authorized domains → Add domain**: `optidazi.github.io`.
 5. **Build → Firestore Database → Create database**: pick a location near you (e.g. `asia-east2`, Hong Kong) and start in **production mode**.
-6. **Firestore → Rules**: paste the contents of `firestore.rules`, replace `PASTE_ADMIN_UID` with your UID from step 3, and click **Publish**.
+6. **Firestore → Rules**: paste the contents of `firestore.rules` (it already has the admin UID) and click **Publish**.
 7. **Project settings (gear icon) → General → Your apps → Web (`</>`)**: register an app (no hosting needed) and copy the `firebaseConfig` values.
 8. Put those values and your UID into `firebase-config.js`, then commit and push. The site updates about a minute later.
 

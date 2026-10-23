@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // Geosan Cup draft. Paste into Firebase console → Firestore Database → Rules, after
-// replacing PASTE_ADMIN_UID with the admin's User UID (Authentication → Users).
+// checking that the UID in isAdmin() is the admin's User UID (Authentication → Users).
 //
 // - The admin can read and change everything.
 // - A captain (a UID listed in the draft's `captains` map) can read the draft and can
@@ -11,7 +11,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      return request.auth != null && request.auth.uid == 'PASTE_ADMIN_UID';
+      return request.auth != null && request.auth.uid == 'NIrCTa6UI3WNxj586RN5JHzxFe83';
     }
 
     function isCaptain(d) {

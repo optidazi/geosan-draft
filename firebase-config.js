@@ -11,4 +11,4 @@ export const firebaseConfig = {
 
 // User UID of the admin account (Firebase console → Authentication → Users).
 // Must match the UID in firestore.rules.
-export const ADMIN_UID = "PASTE_ADMIN_UID";
+export const ADMIN_UID = "NIrCTa6UI3WNxj586RN5JHzxFe83";
