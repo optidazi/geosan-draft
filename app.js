@@ -28,11 +28,12 @@ const I18N = {
     next_lottery: "Next: lottery",
     lottery_title: "Draft lottery",
     lottery_lead: "15 balls, one per ticket. When a ball comes out, that team takes the pick and all its other balls leave the drum.",
-    draw_btn: "Draw pick #{n}", drawing: "Mixing…", start_draft: "Start the draft",
+    draw_btn: "Draw pick #{n}", draw_last: "Place the last team", drawing: "Mixing…", start_draft: "Start the draft",
     order_title: "First-round order", odds_next: "Odds for pick #{n}",
     reveal_idle: "The admin draws the first pick",
     reveal_idle_admin: "Press the button to draw the first pick",
     reveal_pick: "Ball #{b} · pick #{n} goes to",
+    reveal_last: "Last team left · pick #{n} goes to", last_auto: "last team left, no draw",
     ball_label: "ball #{n}",
     snake: "Snake order (reverses every round)",
     redo_lottery: "Redo lottery",
@@ -63,7 +64,7 @@ const I18N = {
     signin_err_other: "Couldn't sign in ({e}).",
     role_admin: "Admin", role_captain: "Captain · {t}", role_none: "No team",
     no_access: "Your account isn't linked to a team yet. Ask the admin to link it on the Teams step.",
-    no_draft_admin: "No draft yet. Create one with 5 sample teams and 40 sample players, then edit them.",
+    no_draft_admin: "No draft yet. Create one with 5 sample teams and the 45-player men's roster, then edit them.",
     create_draft: "Create draft",
     loading: "Loading…",
     follow_admin: "The admin moves everyone through the steps.",
@@ -117,11 +118,12 @@ const I18N = {
     next_lottery: "Дараах: сугалаа",
     lottery_title: "Драфтын сугалаа",
     lottery_lead: "Тасалбар бүрт нэг бөмбөг, нийт 15. Бөмбөг гарахад тэр баг сонголтыг авч, үлдсэн бөмбөгнүүд нь хүрднээс гарна.",
-    draw_btn: "#{n} сонголтыг сугалах", drawing: "Хольж байна…", start_draft: "Драфтыг эхлүүлэх",
+    draw_btn: "#{n} сонголтыг сугалах", draw_last: "Үлдсэн багийг байрлуулах", drawing: "Хольж байна…", start_draft: "Драфтыг эхлүүлэх",
     order_title: "Эхний тойргийн дараалал", odds_next: "#{n} сонголтын магадлал",
     reveal_idle: "Админ эхний сонголтыг сугална",
     reveal_idle_admin: "Эхний сонголтыг сугалахын тулд товчийг дарна уу",
     reveal_pick: "#{b} бөмбөг · #{n} сонголт",
+    reveal_last: "Үлдсэн баг · #{n} сонголт", last_auto: "үлдсэн баг, сугалаагүй",
     ball_label: "#{n} бөмбөг",
     snake: "Могой дараалал (тойрог бүр урвуу)",
     redo_lottery: "Сугалааг дахин хийх",
@@ -152,7 +154,7 @@ const I18N = {
     signin_err_other: "Нэвтэрч чадсангүй ({e}).",
     role_admin: "Админ", role_captain: "Ахлагч · {t}", role_none: "Баггүй",
     no_access: "Таны бүртгэл багт холбогдоогүй байна. Админаас «Багууд» алхам дээр холбуулахыг хүснэ үү.",
-    no_draft_admin: "Драфт үүсээгүй байна. 5 жишээ баг, 40 жишээ тоглогчтой драфт үүсгээд засварлана уу.",
+    no_draft_admin: "Драфт үүсээгүй байна. 5 жишээ баг, 45 тоглогчийн жагсаалттай драфт үүсгээд засварлана уу.",
     create_draft: "Драфт үүсгэх",
     loading: "Ачаалж байна…",
     follow_admin: "Алхмуудыг админ удирдана.",
@@ -289,25 +291,39 @@ async function setStage(stage) {
   await adminSave(d => {
     d.stage = stage;
     if (stage === "lottery" && !d.lottery) d.lottery = { tickets: buildTickets(d), draws: [], drawing: false };
-    if (stage === "draft" && !d.turnStartedAt) d.turnStartedAt = serverTimestamp();
+    // start a fresh shot clock when the draft opens; an earlier visit (e.g. before the lottery
+    // finished) would otherwise leave an expired clock behind
+    if (stage === "draft" && (!d.turnStartedAt || !d.picks.length)) d.turnStartedAt = lotteryDone(d) ? serverTimestamp() : null;
   });
   window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
 }
 async function drawNext() {
   if (busy || lotteryDone()) return;
   busy = true;
+  if (draws().length === 4) { await placeLastTeam(); busy = false; return; }
   await adminSave(d => {
     if (!d.lottery) d.lottery = { tickets: buildTickets(d), draws: [], drawing: false };
     d.lottery.drawing = true;
   });
   await sleep(reduced ? 300 : 2400);
+  let drawn = 0;
   await adminSave(d => {
     const taken = new Set(order(d));
     const pool = d.lottery.tickets.filter(tk => !taken.has(tk.teamId));
     if (pool.length) { const w = pool[secureRand(pool.length)]; d.lottery.draws.push({ teamId: w.teamId, ball: w.n }); }
     d.lottery.drawing = false;
+    drawn = d.lottery.draws.length;
   });
+  // one team left after the 4th draw: no spin, it simply gets the last pick
+  if (drawn === 4) { await sleep(reduced ? 400 : 2200); await placeLastTeam(); }
   busy = false;
+}
+async function placeLastTeam() {
+  await adminSave(d => {
+    if (draws(d).length !== 4) return;
+    const left = d.teams.find(tm => !order(d).includes(tm.id));
+    if (left) d.lottery.draws.push({ teamId: left.id, ball: null, auto: true });
+  });
 }
 async function makePick(pid) {
   try {
@@ -591,7 +607,7 @@ function renderLottery(m) {
           ? `<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
                <button type="button" class="btn ghost" id="redo">${esc(t("redo_lottery"))}</button>
                <button type="button" class="btn primary big" data-step="draft">${esc(t("start_draft"))} →</button></div>`
-          : `<button type="button" class="btn primary big" id="drawBtn">🏀 ${esc(t("draw_btn", { n: next }))}</button>`}
+          : `<button type="button" class="btn primary big" id="drawBtn">🏀 ${esc(next === 5 ? t("draw_last") : t("draw_btn", { n: next }))}</button>`}
       </div>
       <div class="side">
         <div class="card">
@@ -599,7 +615,7 @@ function renderLottery(m) {
           <div class="order">${[0, 1, 2, 3, 4].map(i => {
             const d = ds[i], tm = d && team(d.teamId);
             return d ? `<div class="slot filled" style="--c:${tm.color}"><span class="no">${i + 1}</span>
-                <div style="min-width:0"><div class="tn">${esc(tm.name)}</div><div class="meta">${esc(t("place")[D.teams.indexOf(tm)])} · ${esc(t("ball_label", { n: d.ball }))}</div></div>
+                <div style="min-width:0"><div class="tn">${esc(tm.name)}</div><div class="meta">${esc(t("place")[D.teams.indexOf(tm)])} · ${esc(d.auto ? t("last_auto") : t("ball_label", { n: d.ball }))}</div></div>
                 <span class="swatch"></span></div>`
               : `<div class="slot"><span class="no">${i + 1}</span><span>—</span><span></span></div>`;
           }).join("")}</div>
@@ -619,8 +635,8 @@ function renderLottery(m) {
 }
 function revealHTML(d, n) {
   const tm = team(d.teamId);
-  return `<div class="bigball" style="--c:${tm.color}">${d.ball}</div>
-    <span class="lbl">${esc(t("reveal_pick", { b: d.ball, n }))}</span>
+  return `<div class="bigball" style="--c:${tm.color}">${d.auto ? n : d.ball}</div>
+    <span class="lbl">${esc(d.auto ? t("reveal_last", { n }) : t("reveal_pick", { b: d.ball, n }))}</span>
     <span class="who" style="color:${tm.color}">${esc(tm.name)}</span>`;
 }
 function startDrum(tickets) {
@@ -691,7 +707,7 @@ function syncLive() {
   const rv = $("#reveal");
   if (rv && drawing && !rv.dataset.mixing) { rv.dataset.mixing = "1"; rv.className = "reveal idle"; rv.innerHTML = `<span class="lbl">${esc(t("drawing"))}</span>`; }
   const db = $("#drawBtn");
-  if (db) { db.disabled = drawing || busy; db.textContent = drawing ? t("drawing") : "🏀 " + t("draw_btn", { n: draws().length + 1 }); }
+  if (db) { db.disabled = drawing || busy; db.textContent = drawing ? t("drawing") : "🏀 " + (draws().length === 4 ? t("draw_last") : t("draw_btn", { n: draws().length + 1 })); }
   paintClock();
 }
 function paintClock() {
