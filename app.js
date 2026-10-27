@@ -188,8 +188,18 @@ const I18N = {
 // ---------- setup ----------
 const COLORS = ["#f26b1d", "#3ba3f5", "#5fd39a", "#e0559b", "#f2c230"];
 const SAMPLE_TEAMS = ["Eagles", "Wolves", "Snow Leopards", "Steeds", "Tigers"];
-const SAMPLE_NAMES = ["Bat-Erdene","Temuulen","Enkhjin","Munkh-Orgil","Sukhbaatar","Anar","Ganzorig","Tuvshin","Bilguun","Erdenebat","Khulan","Nomin","Sarnai","Amarbayar","Delger","Otgonbayar","Batbold","Tselmeg","Uuganbayar","Chinzorig","Odgerel","Saruul","Javkhlan","Khongor","Mergen","Altangerel","Battulga","Naranbaatar","Zolbayar","Dashdorj","Gantulga","Yesui","Enkhbold","Tsogt","Baasanjav","Ariunbold","Munkhzul","Tengis","Orgil","Boldbaatar"];
-const POS_CYCLE = ["G","F","G","F","C","F","G","F"];
+// Men's team roster (from "Mens team.xlsx"): [name, position]
+const ROSTER = [
+  ["О.Цэдэндамба", "C"], ["Г.Бат-Эрдэнэ", "G"], ["Э.Энх-Оргил", "G"], ["Б.Мөнхжаргал", "F"], ["Б.Мөнхтогтох", "C"],
+  ["Б.Хүдэрчулуун", "G"], ["Б.Эрдэнэдалай", "F"], ["Ц.Энхтөр", "G"], ["Д.Бат-Эрдэнэ", "G"], ["Н.Мөнхбаяр", "G"],
+  ["М.Мөнхтулга", "G"], ["А.Сүхбат", "F"], ["О.Төрбат", "F"], ["М.Тэгшжаргал", "G"], ["Ч.Тэмүүжин", "F"],
+  ["М.Хатанбүүвэй", "F"], ["Б.Чинзориг", "G"], ["Н.Мөнхжаргал", "F"], ["П.Бат-Эрдэнэ", "F"], ["Ган-Эрдэнэ", "G"],
+  ["Сумъяабазар", "F"], ["Алтанбагана", "F"], ["Энхцогт", "G"], ["Батзориг", "C"], ["Ариунбилэг", "F"],
+  ["Эрдэнэбаяр", "C"], ["Эрхэмбаяр", "C"], ["Отгонтулга", "F"], ["Түвшинбадрах", "F"], ["Баатар", "G"],
+  ["Бишрэлт", "F"], ["Амарбаясгалан", "G"], ["Баярсайхан", "G"], ["Бямбаравдан", "G"], ["Бат-Амгалан", "G"],
+  ["Оюунбаатар", "G"], ["Билгүүн", "G"], ["Даваасүрэн", "G"], ["Хөхтөмөр", "F"], ["Баатарсүрэн", "F"],
+  ["Батбаяр", "G"], ["Отгонбайгал", "G"], ["Сэмжид", "G"], ["Оюунболд", "G"], ["Түвшинсайхан", "G"],
+];
 const STEPS = ["teams", "players", "lottery", "draft", "results"];
 const SHOT = 60;
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -250,7 +260,7 @@ function computePickOrder(d) {
 function secureRand(max) { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % max; }
 function seedDoc() {
   const players = {};
-  SAMPLE_NAMES.forEach((n, i) => { players[uid()] = { name: n, pos: POS_CYCLE[i % POS_CYCLE.length], o: i }; });
+  ROSTER.forEach(([n, pos], i) => { players[uid()] = { name: n, pos, o: i }; });
   return {
     stage: "teams", snake: true,
     teams: SAMPLE_TEAMS.map((n, i) => ({ id: "t" + i, name: n, captain: "", color: COLORS[i] })),
