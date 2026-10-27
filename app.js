@@ -46,7 +46,8 @@ const I18N = {
     search: "Search players", all: "All",
     undo: "Undo last pick",
     confirm_title: "Confirm the pick", confirm: "Draft player", cancel: "Cancel",
-    pick_in: "The pick is in!",
+    pick_in: "The pick is in!", auto_pick: "⏱ Time's up: random pick",
+    shot_note: "When the clock hits 0, a random player is picked for the team on the clock.",
     rosters: "Rosters", no_picks: "No picks yet",
     draft_done: "Draft complete!", see_results: "See final rosters",
     results_title: "Final rosters", results_lead: "Every player has a team. Copy the list to share it in chat.",
@@ -136,7 +137,8 @@ const I18N = {
     search: "Тоглогч хайх", all: "Бүгд",
     undo: "Сүүлийн сонголтыг буцаах",
     confirm_title: "Сонголтоо баталгаажуулна уу", confirm: "Тоглогчийг сонгох", cancel: "Болих",
-    pick_in: "Сонголт хийгдлээ!",
+    pick_in: "Сонголт хийгдлээ!", auto_pick: "⏱ Цаг дууслаа: санамсаргүй сонголт",
+    shot_note: "Цаг 0 болоход ээлжтэй багт санамсаргүй тоглогч автоматаар сонгогдоно.",
     rosters: "Багийн бүрэлдэхүүн", no_picks: "Сонголт алга",
     draft_done: "Драфт дууслаа!", see_results: "Эцсийн бүрэлдэхүүн",
     results_title: "Эцсийн бүрэлдэхүүн", results_lead: "Бүх тоглогч багтай боллоо. Жагсаалтыг хуулж чатад хуваалцаарай.",
@@ -343,6 +345,35 @@ async function makePick(pid) {
     toast(e.message === "turn" ? t("not_your_turn") : e.message === "taken" ? t("taken") : t("save_err", { e: e.code || e.message }));
   }
 }
+// Shot clock ran out: pick a random undrafted player for the team on the clock. Runs in the
+// admin's browser and the on-clock captain's; the transaction makes sure only one of them lands.
+let autoFor = -1;
+async function autoPick(n) {
+  try {
+    await runTransaction(db, async tx => {
+      const d = (await tx.get(ref)).data();
+      const tid = d.pickOrder[n], start = d.turnStartedAt?.toMillis?.();
+      if (d.stage !== "draft" || d.picks.length !== n || !tid || !start) return;
+      if (Date.now() - start < SHOT * 1000 - 1500) return; // clock was reset meanwhile
+      if (!isAdmin() && d.captains[tid] !== user.uid) return;
+      const left = Object.keys(d.players).filter(id => !d.draftedIds.includes(id));
+      if (!left.length) return;
+      const pid = left[secureRand(left.length)];
+      tx.update(ref, {
+        picks: [...d.picks, { playerId: pid, teamId: tid, by: user.uid }],
+        draftedIds: [...d.draftedIds, pid],
+        turnStartedAt: serverTimestamp(),
+      });
+    });
+  } catch { setTimeout(() => { if (autoFor === n) autoFor = -1; }, 3000); } // try again shortly
+}
+function maybeAutoPick(left) {
+  if (left > 0 || !D || D.stage !== "draft" || !lotteryDone() || draftDone()) return;
+  const n = D.picks.length, tid = D.pickOrder[n];
+  if (!tid || autoFor === n || !(isAdmin() || tid === myTeamId())) return;
+  autoFor = n;
+  autoPick(n);
+}
 async function createCaptainLogin(teamId, email, pw) {
   email = email.trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast(t("bad_email"));
@@ -406,10 +437,12 @@ function liveEffects(prev) {
   const pn = prev.picks?.length || 0, n = D.picks.length;
   if (n === pn + 1) {
     const p = D.picks[n - 1], tm = team(p.teamId), pl = player(p.playerId);
+    const ps = prev.turnStartedAt?.toMillis?.(), auto = ps && Date.now() - ps >= (SHOT - 2) * 1000;
+    if ($("#doPick")) closeModal(); // the turn moved on while a pick was being confirmed
     lastNewPick = n - 1; lastKey = ""; render();
     $("#clockCard")?.classList.add("change");
     const ov = document.createElement("div"); ov.className = "pickin"; ov.style.setProperty("--c", tm.color);
-    ov.innerHTML = `<div>${esc(t("pick_in"))}<small>#${n} · ${esc(pl?.name)} → ${esc(tm.name)}</small></div>`;
+    ov.innerHTML = `<div>${esc(t(auto ? "auto_pick" : "pick_in"))}<small>#${n} · ${esc(pl?.name)} → ${esc(tm.name)}</small></div>`;
     document.body.appendChild(ov); setTimeout(() => ov.remove(), reduced ? 900 : 1700);
     burst(tm.color, draftDone() ? 260 : 140);
     if (draftDone()) setTimeout(() => burst("#f2c230", 200), 500);
@@ -716,6 +749,7 @@ function paintClock() {
   const left = start ? Math.max(0, SHOT - Math.floor((Date.now() - start) / 1000)) : SHOT;
   led.textContent = String(Math.min(SHOT, left)).padStart(2, "0");
   led.classList.toggle("warn", left <= 10);
+  if (start) maybeAutoPick(left);
 }
 setInterval(paintClock, 250);
 
@@ -741,7 +775,7 @@ function renderDraft(m) {
     top = `${banner}<div class="clock" id="clockCard" style="--c:${tm.color}">
         <div class="who"><span class="tag">${esc(t("on_clock"))}</span><h2>${esc(tm.name)}</h2>
           <div class="sub">${esc(t("round", { r: Math.floor(i / 5) + 1 }))} · ${esc(t("pick_of", { n: i + 1, t: tot }))}${tm.captain ? " · " + esc(t("captain_short", { c: tm.captain })) : ""}</div></div>
-        <div class="shot"><div class="led" id="shotLed">${SHOT}</div></div>
+        <div class="shot"><div class="led" id="shotLed">${SHOT}</div><p class="shot-note">⚠ ${esc(t("shot_note"))}</p></div>
       </div>
       <div class="upnext">${ups.length ? `<b>${esc(t("next_up"))}:</b> ${ups.join("")}` : ""}
         <span style="flex:1"></span>${admin ? `<button type="button" class="btn ghost" id="undoBtn" ${D.picks.length ? "" : "disabled"}>↶ ${esc(t("undo"))}</button>` : ""}</div>

@@ -266,6 +266,7 @@ button { cursor: pointer; }
 @keyframes flash { 0% { filter: brightness(1.8); transform: scale(1.01); } }
 .shot { display: grid; justify-items: center; gap: 6px; }
 .shot .led { font-size: 34px; min-width: 96px; text-align: center; }
+.shot-note { margin: 0; max-width: 190px; font-size: 12px; line-height: 1.35; text-align: center; color: var(--led); }
 .shot .led.warn { color: var(--bad); text-shadow: 0 0 12px rgba(255,93,93,.7); animation: blink .5s steps(2) infinite; }
 .shot-btns { display: flex; gap: 6px; }
 .shot-btns .btn { padding: 6px 10px; font-size: 12px; }
@@ -393,6 +394,7 @@ button { cursor: pointer; }
   .step .lbl { display: none; }
   .clock { grid-template-columns: minmax(0,1fr); }
   .shot { justify-items: start; }
+  .shot-note { text-align: left; max-width: none; }
   .team-row { grid-template-columns: minmax(0,1fr) auto; }
   .team-row .place { grid-column: 1; }
   .team-row .f-name, .team-row .f-cap, .team-row .tix { grid-column: 1 / -1; }
