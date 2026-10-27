@@ -35,7 +35,7 @@ const I18N = {
     reveal_pick: "Ball #{b} · pick #{n} goes to",
     reveal_last: "Last team left · pick #{n} goes to", last_auto: "last team left, no draw",
     ball_label: "ball #{n}",
-    snake: "Snake order (reverses every round)",
+    snake: "Snake order: the pick order reverses every round",
     redo_lottery: "Redo lottery",
     redo_q: "Redo the lottery? The current order will be cleared.", redo_yes: "Clear and redo",
     redo_blocked: "The draft has started. Use Reset to redo the lottery.",
@@ -125,7 +125,7 @@ const I18N = {
     reveal_pick: "#{b} бөмбөг · #{n} сонголт",
     reveal_last: "Үлдсэн баг · #{n} сонголт", last_auto: "үлдсэн баг, сугалаагүй",
     ball_label: "#{n} бөмбөг",
-    snake: "Могой дараалал (тойрог бүр урвуу)",
+    snake: "Могой дараалал: тойрог бүрт сонголтын дараалал урвуу эргэнэ",
     redo_lottery: "Сугалааг дахин хийх",
     redo_q: "Сугалааг дахин хийх үү? Одоогийн дараалал устна.", redo_yes: "Устгаад дахин хийх",
     redo_blocked: "Драфт эхэлсэн байна. Сугалааг дахин хийхийн тулд «Шинээр эхлэх» товчийг дарна уу.",
@@ -597,7 +597,7 @@ function renderLottery(m) {
   const last = ds.at(-1);
   m.innerHTML = `<section class="panel">
     <div class="head"><div><h2>${esc(t("lottery_title"))}</h2><p>${esc(t("lottery_lead"))}</p></div>
-      <label class="toggle"><input type="checkbox" id="snake" ${D.snake ? "checked" : ""} ${!admin || D.picks.length ? "disabled" : ""}> ${esc(t("snake"))}</label></div>
+      <span class="chip" style="white-space:normal">🐍 ${esc(t("snake"))}</span></div>
     <div class="lottery">
       <div class="card machine">
         <div class="drum-wrap"><canvas id="drum" width="640" height="640"></canvas></div>
@@ -929,7 +929,6 @@ document.addEventListener("change", e => {
   const el = e.target;
   if (!isAdmin()) return;
   if (el.dataset.ppos) { const id = el.dataset.ppos, v = el.value; adminSave(d => { if (d.players[id]) d.players[id].pos = v; }); }
-  if (el.id === "snake") { const v = el.checked; adminSave(d => { d.snake = v; }); }
 });
 document.addEventListener("submit", async e => {
   e.preventDefault();

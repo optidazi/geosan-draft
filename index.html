@@ -241,11 +241,6 @@ button { cursor: pointer; }
 .odds-item .nm span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .odds-item b { font-family: var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; }
 .odds-item .oddsbar { grid-column: 1 / -1; }
-.toggle { display: inline-flex; gap: 10px; align-items: center; font-size: 14px; cursor: pointer; user-select: none; }
-.toggle input { appearance: none; width: 40px; height: 22px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); position: relative; cursor: pointer; transition: .2s; flex: none; margin: 0; }
-.toggle input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); transition: .2s; }
-.toggle input:checked { background: var(--ball); border-color: var(--ball); }
-.toggle input:checked::after { left: 20px; background: #fff; }
 
 /* ---------- draft ---------- */
 .draft { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
