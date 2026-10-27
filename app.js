@@ -802,7 +802,7 @@ function renderRosters() {
   el.innerHTML = order().map(id => {
     const tm = team(id), mine = D.picks.map((p, i) => ({ ...p, i })).filter(p => p.teamId === id);
     return `<div class="roster ${id === cur ? "active" : ""}" style="--c:${tm.color}">
-      <header><span class="swatch"></span><b>${esc(tm.name)}</b><span class="cnt">${mine.length}</span></header>
+      <header><span class="swatch"></span><div class="tm">${tm.captain ? `<small>${esc(t("captain_short", { c: tm.captain }))}</small>` : ""}<b>${esc(tm.name)}</b></div><span class="cnt">${mine.length}</span></header>
       ${mine.length ? `<ol>${mine.map(p => `<li class="${p.i === lastNewPick ? "new" : ""}"><span class="pk">${p.i + 1}</span>${esc(player(p.playerId)?.name)}</li>`).join("")}</ol>` : `<div class="none">${esc(t("no_picks"))}</div>`}
     </div>`;
   }).join("");

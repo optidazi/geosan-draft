@@ -294,7 +294,9 @@ button { cursor: pointer; }
 .roster { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; transition: border-color .3s, box-shadow .3s; }
 .roster.active { border-color: var(--c); box-shadow: 0 0 0 1px var(--c), 0 10px 30px -16px var(--c); }
 .roster header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.roster header b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roster header .tm { flex: 1; min-width: 0; display: grid; }
+.roster header .tm small { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.roster header b { overflow-wrap: anywhere; }
 .roster header .cnt { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
 .roster ol { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 5px; }
 .roster li { font-size: 13px; padding: 3px 8px; border-radius: 6px; background: var(--panel-2); display: inline-flex; gap: 6px; align-items: center; }
