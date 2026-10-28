@@ -28,9 +28,9 @@ Firestore security rules (`firestore.rules`) enforce these limits on Google's se
 ## Running draft night
 
 1. Open the site and sign in with the admin login. Click **Create draft**.
-2. **Teams**: set last year's order with the arrows (champion = 1 ticket … last place = 5), rename the teams, and for each team enter the captain's email, click **Generate** for a password, then **Create login**. Copy the details from the pop-up and send them to that captain.
+2. **Teams**: set last year's order with the arrows (champion = 1 ticket … last place = 6), rename the teams, and for each team enter the captain's email, click **Generate** for a password, then **Create login**. Copy the details from the pop-up and send them to that captain.
 3. **Players**: replace the sample names (paste one per line: `Name, G/F/C`).
-4. **Lottery**: captains sign in and watch. Click **Draw** five times.
+4. **Lottery**: captains sign in and watch. Click **Draw** five times; the last team is placed automatically.
 5. **Draft**: the captain on the clock gets a "Your pick!" banner and their browser tab title changes. Everyone sees each pick appear live.
 6. **Results**: copy the final rosters as text.
 

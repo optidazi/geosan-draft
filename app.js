@@ -10,8 +10,8 @@ const I18N = {
     tab_teams: "Teams", tab_players: "Players", tab_lottery: "Lottery", tab_draft: "Draft", tab_results: "Results",
     led: "Pick",
     teams_title: "Last year's standings",
-    teams_lead: "Teams in order of last season's finish. The champion gets 1 lottery ticket and last place gets 5. More tickets means a better chance at the first pick.",
-    place: ["Champion", "2nd place", "3rd place", "4th place", "5th place"],
+    teams_lead: "Teams in order of last season's finish. The champion gets 1 lottery ticket and last place gets 6. More tickets means a better chance at the first pick.",
+    place: ["Champion", "2nd place", "3rd place", "4th place", "5th place", "6th place"],
     team_name: "Team name", captain: "Captain",
     tickets1: "1 ticket", tickets: "{n} tickets", odds: "{p}% first-pick odds",
     move_up: "Move up", move_down: "Move down",
@@ -27,7 +27,7 @@ const I18N = {
     count_players: "{n} players · {r} rounds",
     next_lottery: "Next: lottery",
     lottery_title: "Draft lottery",
-    lottery_lead: "15 balls, one per ticket. When a ball comes out, that team takes the pick and all its other balls leave the drum.",
+    lottery_lead: "21 balls, one per ticket. When a ball comes out, that team takes the pick and all its other balls leave the drum.",
     draw_btn: "Draw pick #{n}", draw_last: "Place the last team", drawing: "Mixing…", start_draft: "Start the draft",
     order_title: "First-round order", odds_next: "Odds for pick #{n}",
     reveal_idle: "The admin draws the first pick",
@@ -65,7 +65,7 @@ const I18N = {
     signin_err_other: "Couldn't sign in ({e}).",
     role_admin: "Admin", role_captain: "Captain · {t}", role_none: "No team",
     no_access: "Your account isn't linked to a team yet. Ask the admin to link it on the Teams step.",
-    no_draft_admin: "No draft yet. Create one with 5 sample teams and the 45-player men's roster, then edit them.",
+    no_draft_admin: "No draft yet. Create one with 6 sample teams and the 45-player men's roster, then edit them.",
     create_draft: "Create draft",
     loading: "Loading…",
     follow_admin: "The admin moves everyone through the steps.",
@@ -101,8 +101,8 @@ const I18N = {
     tab_teams: "Багууд", tab_players: "Тоглогчид", tab_lottery: "Сугалаа", tab_draft: "Драфт", tab_results: "Үр дүн",
     led: "Сонголт",
     teams_title: "Өнгөрсөн жилийн байр",
-    teams_lead: "Багууд өнгөрсөн улирлын байраараа эрэмбэлэгдсэн. Аварга баг 1 сугалааны тасалбар, сүүлийн байр 5 тасалбар авна. Тасалбар олон байх тусам эхний сонголтыг авах магадлал өндөр.",
-    place: ["Аварга", "2-р байр", "3-р байр", "4-р байр", "5-р байр"],
+    teams_lead: "Багууд өнгөрсөн улирлын байраараа эрэмбэлэгдсэн. Аварга баг 1 сугалааны тасалбар, сүүлийн байр 6 тасалбар авна. Тасалбар олон байх тусам эхний сонголтыг авах магадлал өндөр.",
+    place: ["Аварга", "2-р байр", "3-р байр", "4-р байр", "5-р байр", "6-р байр"],
     team_name: "Багийн нэр", captain: "Ахлагч",
     tickets1: "1 тасалбар", tickets: "{n} тасалбар", odds: "Эхний сонголт: {p}%",
     move_up: "Дээш", move_down: "Доош",
@@ -118,7 +118,7 @@ const I18N = {
     count_players: "{n} тоглогч · {r} тойрог",
     next_lottery: "Дараах: сугалаа",
     lottery_title: "Драфтын сугалаа",
-    lottery_lead: "Тасалбар бүрт нэг бөмбөг, нийт 15. Бөмбөг гарахад тэр баг сонголтыг авч, үлдсэн бөмбөгнүүд нь хүрднээс гарна.",
+    lottery_lead: "Тасалбар бүрт нэг бөмбөг, нийт 21. Бөмбөг гарахад тэр баг сонголтыг авч, үлдсэн бөмбөгнүүд нь хүрднээс гарна.",
     draw_btn: "#{n} сонголтыг сугалах", draw_last: "Үлдсэн багийг байрлуулах", drawing: "Хольж байна…", start_draft: "Драфтыг эхлүүлэх",
     order_title: "Эхний тойргийн дараалал", odds_next: "#{n} сонголтын магадлал",
     reveal_idle: "Админ эхний сонголтыг сугална",
@@ -156,7 +156,7 @@ const I18N = {
     signin_err_other: "Нэвтэрч чадсангүй ({e}).",
     role_admin: "Админ", role_captain: "Ахлагч · {t}", role_none: "Баггүй",
     no_access: "Таны бүртгэл багт холбогдоогүй байна. Админаас «Багууд» алхам дээр холбуулахыг хүснэ үү.",
-    no_draft_admin: "Драфт үүсээгүй байна. 5 жишээ баг, 45 тоглогчийн жагсаалттай драфт үүсгээд засварлана уу.",
+    no_draft_admin: "Драфт үүсээгүй байна. 6 жишээ баг, 45 тоглогчийн жагсаалттай драфт үүсгээд засварлана уу.",
     create_draft: "Драфт үүсгэх",
     loading: "Ачаалж байна…",
     follow_admin: "Алхмуудыг админ удирдана.",
@@ -190,8 +190,9 @@ const I18N = {
 };
 
 // ---------- setup ----------
-const COLORS = ["#f26b1d", "#3ba3f5", "#5fd39a", "#e0559b", "#f2c230"];
-const SAMPLE_TEAMS = ["Eagles", "Wolves", "Snow Leopards", "Steeds", "Tigers"];
+const NT = 6; // number of teams
+const COLORS = ["#f26b1d", "#3ba3f5", "#5fd39a", "#e0559b", "#f2c230", "#a783f5"];
+const SAMPLE_TEAMS = ["Eagles", "Wolves", "Snow Leopards", "Steeds", "Tigers", "Bears"];
 // Men's team roster (from "Mens team.xlsx"): [name, position]
 const ROSTER = [
   ["Алтанбагана", "F"], ["Амарбаясгалан", "G"], ["Ариунбилэг", "F"], ["Баатар", "G"], ["Баатарсүрэн", "F"],
@@ -242,11 +243,12 @@ const team = id => D.teams.find(x => x.id === id);
 const playerList = d => Object.entries((d || D).players || {}).map(([id, p]) => ({ id, ...p })).sort((a, b) => a.o - b.o);
 const player = id => D.players[id] ? { id, ...D.players[id] } : null;
 const ticketsFor = idx => idx + 1;
+const totalTickets = () => NT * (NT + 1) / 2;
 const draws = d => (d || D).lottery?.draws || [];
 const order = d => draws(d).map(x => x.teamId);
-const lotteryDone = d => draws(d).length === 5;
+const lotteryDone = d => draws(d).length === NT;
 const totalPicks = () => Object.keys(D.players).length;
-const rounds = () => Math.ceil(totalPicks() / 5);
+const rounds = () => Math.ceil(totalPicks() / NT);
 const drafted = () => new Set(D.draftedIds || []);
 const draftDone = () => totalPicks() > 0 && D.picks.length >= totalPicks();
 
@@ -256,9 +258,9 @@ function buildTickets(d) {
   return out;
 }
 function computePickOrder(d) {
-  const o = order(d); if (o.length < 5) return [];
+  const o = order(d); if (o.length < NT) return [];
   const n = Object.keys(d.players).length, out = [];
-  for (let i = 0; i < n; i++) { const r = Math.floor(i / 5), k = i % 5; out.push(d.snake && r % 2 === 1 ? o[4 - k] : o[k]); }
+  for (let i = 0; i < n; i++) { const r = Math.floor(i / NT), k = i % NT; out.push(d.snake && r % 2 === 1 ? o[NT - 1 - k] : o[k]); }
   return out;
 }
 function secureRand(max) { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % max; }
@@ -302,7 +304,7 @@ async function setStage(stage) {
 async function drawNext() {
   if (busy || lotteryDone()) return;
   busy = true;
-  if (draws().length === 4) { await placeLastTeam(); busy = false; return; }
+  if (draws().length === NT - 1) { await placeLastTeam(); busy = false; return; }
   await adminSave(d => {
     if (!d.lottery) d.lottery = { tickets: buildTickets(d), draws: [], drawing: false };
     d.lottery.drawing = true;
@@ -316,13 +318,13 @@ async function drawNext() {
     d.lottery.drawing = false;
     drawn = d.lottery.draws.length;
   });
-  // one team left after the 4th draw: no spin, it simply gets the last pick
-  if (drawn === 4) { await sleep(reduced ? 400 : 2200); await placeLastTeam(); }
+  // one team left after the second-to-last draw: no spin, it simply gets the last pick
+  if (drawn === NT - 1) { await sleep(reduced ? 400 : 2200); await placeLastTeam(); }
   busy = false;
 }
 async function placeLastTeam() {
   await adminSave(d => {
-    if (draws(d).length !== 4) return;
+    if (draws(d).length !== NT - 1) return;
     const left = d.teams.find(tm => !order(d).includes(tm.id));
     if (left) d.lottery.draws.push({ teamId: left.id, ball: null, auto: true });
   });
@@ -409,13 +411,31 @@ function subscribe() {
       docState = D ? "ok" : "missing";
       render();
       if (D && prev) liveEffects(prev);
-      if (isAdmin()) migrateEmails();
+      if (isAdmin()) { migrateEmails(); migrateTeams(); }
     }, err => { docState = err.code === "permission-denied" ? "denied" : "error"; D = null; render(); });
     if (isAdmin()) privUnsub = onSnapshot(privRef, s => { privEmails = s.data()?.emails || {}; lastKey = ""; render(); }, () => {});
   }
   render();
 }
 // drafts created before spectator mode kept captain emails on the public doc
+// drafts created before the switch to 6 teams: add the missing teams (and redo any lottery)
+async function migrateTeams() {
+  if (migrating || !D?.teams || D.teams.length >= NT || D.picks.length) return;
+  migrating = true;
+  try {
+    await adminSave(d => {
+      const numbered = d.teams.every(tm => /\d+\s*$/.test(tm.name));
+      for (let i = d.teams.length; i < NT; i++) {
+        let id = "t" + i; while (d.teams.some(tm => tm.id === id)) id += "x";
+        const name = numbered ? d.teams[0].name.replace(/\d+\s*$/, String(i + 1)) : SAMPLE_TEAMS[i];
+        d.teams.push({ id, name, captain: "", color: COLORS[i] });
+      }
+      d.lottery = d.stage === "lottery" ? { tickets: buildTickets(d), draws: [], drawing: false } : null;
+      d.turnStartedAt = null;
+    });
+  } catch (e) { toast(t("save_err", { e: e.code || e.message })); }
+  finally { migrating = false; }
+}
 async function migrateEmails() {
   if (migrating || !D?.teams?.some(tm => tm.email)) return;
   migrating = true;
@@ -507,7 +527,7 @@ function renderChrome() {
   const nav = $("#steps");
   if (!D) { nav.hidden = true; return; }
   nav.hidden = false;
-  const done = { teams: true, players: totalPicks() >= 5, lottery: lotteryDone(), draft: draftDone(), results: draftDone() };
+  const done = { teams: true, players: totalPicks() >= NT, lottery: lotteryDone(), draft: draftDone(), results: draftDone() };
   nav.innerHTML = STEPS.map((s, i) => {
     const cur = s === D.stage, mark = done[s] && !cur;
     return `<button type="button" class="step ${mark ? "done" : ""}" data-step="${s}" ${cur ? 'aria-current="step"' : ""} ${!isAdmin() && !cur ? "disabled" : ""} title="${esc(isAdmin() ? t("tab_" + s) : t("follow_admin"))}">
@@ -545,7 +565,7 @@ function renderTeams(m, movedId) {
       ${admin ? `<button type="button" class="btn" id="copyWatch">👀 ${esc(t("copy_watch"))}</button>` : ""}</div>
     ${admin && locked ? `<div class="note">🔒 ${esc(t("locked"))}</div>` : ""}
     <div class="teams">${D.teams.map((tm, i) => {
-      const n = ticketsFor(i), pct = Math.round(n / 15 * 1000) / 10;
+      const n = ticketsFor(i), pct = Math.round(n / totalTickets() * 1000) / 10;
       const linked = !!D.captains?.[tm.id];
       return `<div class="team-row ${tm.id === movedId ? "moved" : ""}" style="--c:${tm.color}">
         <div class="place"><b>#${i + 1}</b><span>${esc(t("place")[i])}</span></div>
@@ -558,11 +578,11 @@ function renderTeams(m, movedId) {
         <div class="tix">
           <div class="tix-row" aria-label="${esc(n === 1 ? t("tickets1") : t("tickets", { n }))}">${Array.from({ length: n }, (_, j) => `<span class="ticket" style="animation-delay:${j * 60}ms"></span>`).join("")}</div>
           <small>${esc(n === 1 ? t("tickets1") : t("tickets", { n }))} · ${esc(t("odds", { p: pct }))}</small>
-          <div class="oddsbar"><i style="width:${pct / (5 / 15 * 100) * 100}%"></i></div>
+          <div class="oddsbar"><i style="width:${pct / (NT / totalTickets() * 100) * 100}%"></i></div>
         </div>
         <div class="movers">${admin ? `
           <button type="button" class="btn icon" data-move="${i}" data-dir="-1" ${i === 0 || locked ? "disabled" : ""} aria-label="${esc(t("move_up"))}" title="${esc(t("move_up"))}">▲</button>
-          <button type="button" class="btn icon" data-move="${i}" data-dir="1" ${i === 4 || locked ? "disabled" : ""} aria-label="${esc(t("move_down"))}" title="${esc(t("move_down"))}">▼</button>` : ""}
+          <button type="button" class="btn icon" data-move="${i}" data-dir="1" ${i === NT - 1 || locked ? "disabled" : ""} aria-label="${esc(t("move_down"))}" title="${esc(t("move_down"))}">▼</button>` : ""}
         </div>
         ${admin ? `<div class="login-row"><span class="lbl">${esc(t("login_col"))}</span>${linked
           ? `<span class="ok">✓ ${esc(t("login_ready", { e: privEmails[tm.id] || tm.email || D.captains[tm.id] }))}</span><button type="button" class="btn ghost danger" data-unlink="${tm.id}">${esc(t("unlink"))}</button>`
@@ -640,12 +660,12 @@ function renderLottery(m) {
           ? `<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
                <button type="button" class="btn ghost" id="redo">${esc(t("redo_lottery"))}</button>
                <button type="button" class="btn primary big" data-step="draft">${esc(t("start_draft"))} →</button></div>`
-          : `<button type="button" class="btn primary big" id="drawBtn">🏀 ${esc(next === 5 ? t("draw_last") : t("draw_btn", { n: next }))}</button>`}
+          : `<button type="button" class="btn primary big" id="drawBtn">🏀 ${esc(next === NT ? t("draw_last") : t("draw_btn", { n: next }))}</button>`}
       </div>
       <div class="side">
         <div class="card">
           <h3>${esc(t("order_title"))}</h3>
-          <div class="order">${[0, 1, 2, 3, 4].map(i => {
+          <div class="order">${D.teams.map((_, i) => {
             const d = ds[i], tm = d && team(d.teamId);
             return d ? `<div class="slot filled" style="--c:${tm.color}"><span class="no">${i + 1}</span>
                 <div style="min-width:0"><div class="tn">${esc(tm.name)}</div><div class="meta">${esc(t("place")[D.teams.indexOf(tm)])} · ${esc(d.auto ? t("last_auto") : t("ball_label", { n: d.ball }))}</div></div>
@@ -740,7 +760,7 @@ function syncLive() {
   const rv = $("#reveal");
   if (rv && drawing && !rv.dataset.mixing) { rv.dataset.mixing = "1"; rv.className = "reveal idle"; rv.innerHTML = `<span class="lbl">${esc(t("drawing"))}</span>`; }
   const db = $("#drawBtn");
-  if (db) { db.disabled = drawing || busy; db.textContent = drawing ? t("drawing") : "🏀 " + (draws().length === 4 ? t("draw_last") : t("draw_btn", { n: draws().length + 1 })); }
+  if (db) { db.disabled = drawing || busy; db.textContent = drawing ? t("drawing") : "🏀 " + (draws().length === NT - 1 ? t("draw_last") : t("draw_btn", { n: draws().length + 1 })); }
   paintClock();
 }
 function paintClock() {
@@ -774,7 +794,7 @@ function renderDraft(m) {
       : `<div class="turn wait">⏳ ${esc(t("waiting_for", { t: tm.name }))}</div>`;
     top = `${banner}<div class="clock" id="clockCard" style="--c:${tm.color}">
         <div class="who"><span class="tag">${esc(t("on_clock"))}</span><h2>${esc(tm.name)}</h2>
-          <div class="sub">${esc(t("round", { r: Math.floor(i / 5) + 1 }))} · ${esc(t("pick_of", { n: i + 1, t: tot }))}${tm.captain ? " · " + esc(t("captain_short", { c: tm.captain })) : ""}</div></div>
+          <div class="sub">${esc(t("round", { r: Math.floor(i / NT) + 1 }))} · ${esc(t("pick_of", { n: i + 1, t: tot }))}${tm.captain ? " · " + esc(t("captain_short", { c: tm.captain })) : ""}</div></div>
         <div class="shot"><div class="led" id="shotLed">${SHOT}</div><p class="shot-note">⚠ ${esc(t("shot_note"))}</p></div>
       </div>
       <div class="upnext">${ups.length ? `<b>${esc(t("next_up"))}:</b> ${ups.join("")}` : ""}
@@ -902,7 +922,7 @@ document.addEventListener("click", e => {
     if (await adminSave(d => { d.lottery = null; d.picks = []; d.draftedIds = []; d.turnStartedAt = null; d.stage = "teams"; })) toast(t("reset_done"));
   });
   if (el.dataset.move != null) {
-    const i = +el.dataset.move, j = i + +el.dataset.dir; if (j < 0 || j > 4) return;
+    const i = +el.dataset.move, j = i + +el.dataset.dir; if (j < 0 || j > NT - 1) return;
     adminSave(d => { [d.teams[i], d.teams[j]] = [d.teams[j], d.teams[i]]; if (!draws(d).length) d.lottery = null; });
     return;
   }
