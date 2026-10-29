@@ -2,7 +2,10 @@
 
 Live draft site for the Geosan company basketball tournament: a weighted ticket lottery for draft order, then a draft where each team captain picks from their own computer. English and Mongolian.
 
-Site: https://optidazi.github.io/geosan-draft/
+Men's draft (6 teams): https://optidazi.github.io/geosan-draft/
+Women's draft (3 teams): https://optidazi.github.io/geosan-draft/women/
+
+The two drafts are separate: each has its own teams, players, captain logins, lottery and picks (Firestore documents `draft/main` and `draft/women`). Switch between them with the Men / Women buttons in the header.
 
 ## Roles
 
@@ -10,7 +13,7 @@ Site: https://optidazi.github.io/geosan-draft/
 - **Captains**: sign in with the login the admin created, watch the lottery live, and can draft only for their own team when it's their turn.
 - **Spectators**: anyone with the link can click **Watch the draft** (or open https://optidazi.github.io/geosan-draft/#watch) and follow everything live without logging in. They can't change anything. Admins can copy the spectator link on the Teams step.
 
-Captain login emails are kept in a separate admin-only document (`draft/private`), so spectators never see them.
+Captain login emails are kept in separate admin-only documents (`draft/private` and `draft/private_women`), so spectators never see them.
 
 Firestore security rules (`firestore.rules`) enforce these limits on Google's servers, so captains can't get around them by editing the page.
 
@@ -41,4 +44,5 @@ If a captain's email already has an account (e.g. from an earlier test), the Tea
 - `index.html`: layout and styles
 - `app.js`: app logic (Firebase Auth + Firestore, live sync)
 - `firebase-config.js`: your project's config and admin UID
+- `women/index.html`: short link to the women's draft (`?d=women`)
 - `firestore.rules`: security rules to paste into the Firebase console

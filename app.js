@@ -6,11 +6,12 @@ import { firebaseConfig, ADMIN_UID } from "./firebase-config.js";
 // ---------- i18n ----------
 const I18N = {
   en: {
-    appSub: "Company basketball tournament · Player draft",
+    appSub: "Company basketball tournament · Player draft", appSub_men: "Company basketball tournament · Men's draft", appSub_women: "Company basketball tournament · Women's draft",
+    sw_men: "Men", sw_women: "Women",
     tab_teams: "Teams", tab_players: "Players", tab_lottery: "Lottery", tab_draft: "Draft", tab_results: "Results",
     led: "Pick",
     teams_title: "Last year's standings",
-    teams_lead: "Teams in order of last season's finish. The champion gets 1 lottery ticket and last place gets 6. More tickets means a better chance at the first pick.",
+    teams_lead: "Teams in order of last season's finish. The champion gets 1 lottery ticket and last place gets {nt}. More tickets means a better chance at the first pick.",
     place: ["Champion", "2nd place", "3rd place", "4th place", "5th place", "6th place"],
     team_name: "Team name", captain: "Captain",
     tickets1: "1 ticket", tickets: "{n} tickets", odds: "{p}% first-pick odds",
@@ -27,7 +28,7 @@ const I18N = {
     count_players: "{n} players · {r} rounds",
     next_lottery: "Next: lottery",
     lottery_title: "Draft lottery",
-    lottery_lead: "21 balls, one per ticket. When a ball comes out, that team takes the pick and all its other balls leave the drum.",
+    lottery_lead: "{b} balls, one per ticket. When a ball comes out, that team takes the pick and all its other balls leave the drum.",
     draw_btn: "Draw pick #{n}", draw_last: "Place the last team", drawing: "Mixing…", start_draft: "Start the draft",
     order_title: "First-round order", odds_next: "Odds for pick #{n}",
     reveal_idle: "The admin draws the first pick",
@@ -65,7 +66,7 @@ const I18N = {
     signin_err_other: "Couldn't sign in ({e}).",
     role_admin: "Admin", role_captain: "Captain · {t}", role_none: "No team",
     no_access: "Your account isn't linked to a team yet. Ask the admin to link it on the Teams step.",
-    no_draft_admin: "No draft yet. Create one with 6 sample teams and the 47-player men's roster, then edit them.",
+    no_draft_admin: "No draft yet. Create one with {nt} sample teams and {np} players, then edit them.",
     create_draft: "Create draft",
     loading: "Loading…",
     follow_admin: "The admin moves everyone through the steps.",
@@ -97,11 +98,12 @@ const I18N = {
     copy_watch: "Copy spectator link",
   },
   mn: {
-    appSub: "Компанийн сагсан бөмбөгийн тэмцээн · Тоглогчийн драфт",
+    appSub: "Компанийн сагсан бөмбөгийн тэмцээн · Тоглогчийн драфт", appSub_men: "Компанийн сагсан бөмбөгийн тэмцээн · Эрэгтэй драфт", appSub_women: "Компанийн сагсан бөмбөгийн тэмцээн · Эмэгтэй драфт",
+    sw_men: "Эрэгтэй", sw_women: "Эмэгтэй",
     tab_teams: "Багууд", tab_players: "Тоглогчид", tab_lottery: "Сугалаа", tab_draft: "Драфт", tab_results: "Үр дүн",
     led: "Сонголт",
     teams_title: "Өнгөрсөн жилийн байр",
-    teams_lead: "Багууд өнгөрсөн улирлын байраараа эрэмбэлэгдсэн. Аварга баг 1 сугалааны тасалбар, сүүлийн байр 6 тасалбар авна. Тасалбар олон байх тусам эхний сонголтыг авах магадлал өндөр.",
+    teams_lead: "Багууд өнгөрсөн улирлын байраараа эрэмбэлэгдсэн. Аварга баг 1 сугалааны тасалбар, сүүлийн байр {nt} тасалбар авна. Тасалбар олон байх тусам эхний сонголтыг авах магадлал өндөр.",
     place: ["Аварга", "2-р байр", "3-р байр", "4-р байр", "5-р байр", "6-р байр"],
     team_name: "Багийн нэр", captain: "Ахлагч",
     tickets1: "1 тасалбар", tickets: "{n} тасалбар", odds: "Эхний сонголт: {p}%",
@@ -118,7 +120,7 @@ const I18N = {
     count_players: "{n} тоглогч · {r} тойрог",
     next_lottery: "Дараах: сугалаа",
     lottery_title: "Драфтын сугалаа",
-    lottery_lead: "Тасалбар бүрт нэг бөмбөг, нийт 21. Бөмбөг гарахад тэр баг сонголтыг авч, үлдсэн бөмбөгнүүд нь хүрднээс гарна.",
+    lottery_lead: "Тасалбар бүрт нэг бөмбөг, нийт {b}. Бөмбөг гарахад тэр баг сонголтыг авч, үлдсэн бөмбөгнүүд нь хүрднээс гарна.",
     draw_btn: "#{n} сонголтыг сугалах", draw_last: "Үлдсэн багийг байрлуулах", drawing: "Хольж байна…", start_draft: "Драфтыг эхлүүлэх",
     order_title: "Эхний тойргийн дараалал", odds_next: "#{n} сонголтын магадлал",
     reveal_idle: "Админ эхний сонголтыг сугална",
@@ -156,7 +158,7 @@ const I18N = {
     signin_err_other: "Нэвтэрч чадсангүй ({e}).",
     role_admin: "Админ", role_captain: "Ахлагч · {t}", role_none: "Баггүй",
     no_access: "Таны бүртгэл багт холбогдоогүй байна. Админаас «Багууд» алхам дээр холбуулахыг хүснэ үү.",
-    no_draft_admin: "Драфт үүсээгүй байна. 6 жишээ баг, 47 тоглогчийн жагсаалттай драфт үүсгээд засварлана уу.",
+    no_draft_admin: "Драфт үүсээгүй байна. {nt} жишээ баг, {np} тоглогчтой драфт үүсгээд засварлана уу.",
     create_draft: "Драфт үүсгэх",
     loading: "Ачаалж байна…",
     follow_admin: "Алхмуудыг админ удирдана.",
@@ -190,7 +192,6 @@ const I18N = {
 };
 
 // ---------- setup ----------
-const NT = 6; // number of teams
 const COLORS = ["#f26b1d", "#3ba3f5", "#5fd39a", "#e0559b", "#f2c230", "#a783f5"];
 const SAMPLE_TEAMS = ["Eagles", "Wolves", "Snow Leopards", "Steeds", "Tigers", "Bears"];
 // Men's team roster (from "Mens team.xlsx"): [name, position]
@@ -206,6 +207,17 @@ const ROSTER = [
   ["Чинзориг", "G"], ["Энх-Оргил", "G"], ["Энхтөр", "G"], ["Энхцогт", "G"], ["Эрдэнэбаяр", "C"],
   ["Эрдэнэдалай", "F"], ["Эрхэмбаяр", "C"],
 ];
+// two separate drafts on one site: ?d=women opens the women's draft
+const WOMEN_SIZE = 28;
+const DRAFTS = {
+  men: { doc: "main", priv: "private", teams: 6, roster: ROSTER },
+  women: { doc: "women", priv: "private_women", teams: 3,
+    roster: Array.from({ length: WOMEN_SIZE }, (_, i) => ["Player " + (i + 1), "GFC"[i % 3]]) },
+};
+const DRAFT_ID = new URLSearchParams(location.search).get("d") === "women" ? "women" : "men";
+const CFG = DRAFTS[DRAFT_ID];
+const NT = CFG.teams; // number of teams
+const pageUrl = () => location.origin + location.pathname + location.search;
 const STEPS = ["teams", "players", "lottery", "draft", "results"];
 const SHOT = 60;
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -220,15 +232,15 @@ if (cfgReady) {
   fbApp = initializeApp(firebaseConfig);
   auth = getAuth(fbApp);
   db = getFirestore(fbApp);
-  ref = doc(db, "draft", "main");       // readable by anyone, including spectators
-  privRef = doc(db, "draft", "private"); // admin only: captain login emails
+  ref = doc(db, "draft", CFG.doc);       // readable by anyone, including spectators
+  privRef = doc(db, "draft", CFG.priv); // admin only: captain login emails
 }
 
 let lang = "en";
 try { lang = localStorage.getItem("gd-lang") || "en"; } catch {}
 let user = null, authReady = false, D = null, docState = "loading", unsub = null, lastKey = "", lastNewPick = -1;
 let spectator = location.hash === "#watch", privEmails = {}, privUnsub = null, migrating = false;
-const watchUrl = () => location.origin + location.pathname + "#watch";
+const watchUrl = () => pageUrl() + "#watch";
 let filter = { q: "", pos: "all" }, uidMode = new Set(), busy = false;
 
 const t = (k, v = {}) => {
@@ -267,10 +279,10 @@ function computePickOrder(d) {
 function secureRand(max) { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % max; }
 function seedDoc() {
   const players = {};
-  ROSTER.forEach(([n, pos], i) => { players[uid()] = { name: n, pos, o: i }; });
+  CFG.roster.forEach(([n, pos], i) => { players[uid()] = { name: n, pos, o: i }; });
   return {
     stage: "teams", snake: true,
-    teams: SAMPLE_TEAMS.map((n, i) => ({ id: "t" + i, name: n, captain: "", color: COLORS[i] })),
+    teams: SAMPLE_TEAMS.slice(0, NT).map((n, i) => ({ id: "t" + i, name: n, captain: "", color: COLORS[i] })),
     captains: {}, players, lottery: null, pickOrder: [], picks: [], draftedIds: [], turnStartedAt: null,
   };
 }
@@ -391,7 +403,7 @@ async function createCaptainLogin(teamId, email, pw) {
     await setDoc(privRef, { emails: { [teamId]: email } }, { merge: true });
     const tm = team(teamId);
     modal(`<h3>${esc(t("login_created_title"))}</h3><p>${esc(t("login_created", { t: tm.name }))}</p>
-      <div class="pwbox" id="credBox">${esc(location.origin + location.pathname)}<br>${esc(t("email"))}: ${esc(email)}<br>${esc(t("password"))}: ${esc(pw)}</div>
+      <div class="pwbox" id="credBox">${esc(pageUrl())}<br>${esc(t("email"))}: ${esc(email)}<br>${esc(t("password"))}: ${esc(pw)}</div>
       <div class="row"><button type="button" class="btn" id="copyCred">⧉ ${esc(t("copy"))}</button><button type="button" class="btn primary" data-close>${esc(t("done"))}</button></div>`, () => {
       $("#copyCred").onclick = () => copyText($("#credBox").innerText);
     });
@@ -496,7 +508,7 @@ function render() {
     else if (!user && !spectator && authReady) renderLogin(m);
     else if (!authReady || docState === "loading") m.innerHTML = `<div class="card done-banner"><p>${esc(t("loading"))}</p></div>`;
     else if (docState === "missing") m.innerHTML = isAdmin()
-      ? `<section class="panel"><div class="card done-banner"><div style="font-size:42px">🏀</div><p style="margin:0;font-size:17px">${esc(t("no_draft_admin"))}</p><button type="button" class="btn primary big" id="createDraft">${esc(t("create_draft"))}</button></div></section>`
+      ? `<section class="panel"><div class="card done-banner"><div style="font-size:42px">🏀</div><p style="margin:0;font-size:17px">${esc(t("no_draft_admin", { nt: NT, np: CFG.roster.length }))}</p><button type="button" class="btn primary big" id="createDraft">${esc(t("create_draft"))}</button></div></section>`
       : `<section class="panel"><div class="card done-banner"><div style="font-size:42px">🏀</div><p style="margin:0;font-size:17px">${esc(t("not_started"))}</p></div></section>`;
     else if (docState !== "ok") m.innerHTML = `<section class="panel"><div class="card done-banner"><div style="font-size:42px">🔒</div><p style="margin:0;font-size:17px">${esc(docState === "denied" ? t("no_access") : t("save_err", { e: docState }))}</p></div></section>`;
     else ({ teams: renderTeams, players: renderPlayers, lottery: renderLottery, draft: renderDraft, results: renderResults })[D.stage](m);
@@ -509,7 +521,8 @@ function render() {
   syncLive();
 }
 function renderChrome() {
-  $("#appSub").textContent = t("appSub");
+  $("#appSub").textContent = t("appSub_" + DRAFT_ID);
+  for (const a of document.querySelectorAll("#draftSwitch a")) { a.textContent = t("sw_" + a.dataset.d); a.toggleAttribute("aria-current", a.dataset.d === DRAFT_ID); }
   $("#langEn").setAttribute("aria-pressed", lang === "en");
   $("#langMn").setAttribute("aria-pressed", lang === "mn");
   const rb = $("#resetBtn"); rb.hidden = !(isAdmin() && D); rb.textContent = "↺ " + t("reset");
@@ -535,7 +548,7 @@ function renderChrome() {
       <span class="n">${mark ? "✓" : i + 1}</span><span class="lbl">${esc(t("tab_" + s))}</span></button>`;
   }).join("");
   const myTurn = !isAdmin() && D.stage === "draft" && D.pickOrder[D.picks.length] === myTeamId() && !draftDone();
-  document.title = myTurn ? t("title_turn") : "Geosan Cup Draft";
+  document.title = myTurn ? t("title_turn") : "Geosan Cup Draft · " + t("sw_" + DRAFT_ID);
 }
 function renderSetup(m) {
   m.innerHTML = `<section class="panel"><div class="card auth"><h2>${esc(t("setup_title"))}</h2><p>${esc(t("setup_lead"))}</p></div></section>`;
@@ -562,7 +575,7 @@ function gate(msg, step, label) {
 function renderTeams(m, movedId) {
   const admin = isAdmin(), locked = draws().length > 0;
   m.innerHTML = `<section class="panel">
-    <div class="head"><div><h2>${esc(t("teams_title"))}</h2><p>${esc(t("teams_lead"))}</p></div>
+    <div class="head"><div><h2>${esc(t("teams_title"))}</h2><p>${esc(t("teams_lead", { nt: NT }))}</p></div>
       ${admin ? `<button type="button" class="btn" id="copyWatch">👀 ${esc(t("copy_watch"))}</button>` : ""}</div>
     ${admin && locked ? `<div class="note">🔒 ${esc(t("locked"))}</div>` : ""}
     <div class="teams">${D.teams.map((tm, i) => {
@@ -650,7 +663,7 @@ function renderLottery(m) {
   const remTickets = tickets.filter(tk => !order().includes(tk.teamId));
   const last = ds.at(-1);
   m.innerHTML = `<section class="panel">
-    <div class="head"><div><h2>${esc(t("lottery_title"))}</h2><p>${esc(t("lottery_lead"))}</p></div>
+    <div class="head"><div><h2>${esc(t("lottery_title"))}</h2><p>${esc(t("lottery_lead", { b: totalTickets() }))}</p></div>
       <span class="chip" style="white-space:normal">🐍 ${esc(t("snake"))}</span></div>
     <div class="lottery">
       <div class="card machine">
@@ -906,7 +919,7 @@ document.addEventListener("click", e => {
   if (el.dataset.lang) { lang = el.dataset.lang; try { localStorage.setItem("gd-lang", lang); } catch {} render(); return; }
   if (el.id === "signOut") return signOut(auth);
   if (el.id === "watchBtn") { spectator = true; history.replaceState(null, "", "#watch"); subscribe(); return; }
-  if (el.id === "toLogin") { spectator = false; history.replaceState(null, "", location.pathname); subscribe(); return; }
+  if (el.id === "toLogin") { spectator = false; history.replaceState(null, "", location.pathname + location.search); subscribe(); return; }
   if (el.id === "copyWatch") return copyText(watchUrl());
   if (el.id === "createDraft") return setDoc(ref, seedDoc()).catch(err => toast(t("save_err", { e: err.code })));
   if (el.dataset.step) { if (isAdmin() && el.dataset.step !== D.stage) setStage(el.dataset.step); return; }

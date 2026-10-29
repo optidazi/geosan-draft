@@ -88,10 +88,13 @@ button { cursor: pointer; }
 }
 .led small { display: block; font-size: 9px; letter-spacing: .2em; color: #a3742c; text-shadow: none; text-transform: uppercase; }
 .lang { display: inline-flex; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
-.lang button {
+.lang button, .lang a {
   border: 0; background: transparent; padding: 6px 12px; border-radius: 999px;
   font-weight: 700; font-size: 13px; color: var(--muted); transition: .2s;
 }
+.lang a { text-decoration: none; }
+#draftSwitch { margin-top: 8px; }
+.lang a[aria-current] { background: var(--panel-2); color: var(--fg); }
 .lang button[aria-pressed="true"] { background: var(--ball); color: #fff; box-shadow: 0 4px 14px -4px var(--ball); }
 
 /* ---------- step tabs ---------- */
@@ -420,6 +423,10 @@ button { cursor: pointer; }
       <div>
         <h1>GEOSAN <span>CUP</span> DRAFT</h1>
         <p id="appSub"></p>
+        <nav class="lang" id="draftSwitch" aria-label="Draft">
+          <a href="./" data-d="men">Men</a>
+          <a href="./?d=women" data-d="women">Women</a>
+        </nav>
       </div>
     </div>
     <div class="board-right">

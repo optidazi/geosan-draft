@@ -3,8 +3,9 @@ rules_version = '2';
 // Geosan Cup draft. Paste into Firebase console → Firestore Database → Rules, after
 // checking that the UID in isAdmin() is the admin's User UID (Authentication → Users).
 //
-// - Anyone can read draft/main, so spectators can watch without logging in.
-// - The admin can read and change everything, including draft/private (captain emails).
+// - Anyone can read draft/main (men) and draft/women, so spectators can watch without logging in.
+// - The admin can read and change everything, including draft/private and draft/private_women
+//   (captain emails). Any other document under draft/ is admin only.
 // - A captain (a UID listed in the draft's `captains` map) can only append one pick:
 //   for their own team, when it is their turn, of an undrafted player.
 // - Nobody else can write anything.
@@ -40,14 +41,11 @@ service cloud.firestore {
         && a.turnStartedAt == request.time;
     }
 
-    match /draft/main {
-      allow read: if true;
+    // draft/main (men) and draft/women: public, captains may add their own picks
+    match /draft/{id} {
+      allow read: if id in ['main', 'women'] || isAdmin();
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() || (isCaptain(resource.data) && validCaptainPick());
-    }
-
-    match /draft/private {
-      allow read, write: if isAdmin();
+      allow update: if isAdmin() || (id in ['main', 'women'] && isCaptain(resource.data) && validCaptainPick());
     }
   }
 }
