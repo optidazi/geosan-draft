@@ -208,11 +208,17 @@ const ROSTER = [
   ["Эрдэнэдалай", "F"], ["Эрхэмбаяр", "C"],
 ];
 // two separate drafts on one site: ?d=women opens the women's draft
-const WOMEN_SIZE = 28;
+// Women's roster (from "names_list_1.xlsx", Women's tab): [name, position]
+const WOMEN_ROSTER = [
+  ["Алгирмаа", "F"], ["Алтансувд", "F"], ["Амгалан", "F"], ["Ануужин", "C"], ["Батчимэг", "F"],
+  ["Баярзаяа", "F"], ["Баясгалан", "F"], ["Болортуяа", "G"], ["Буд-Очир", "F"], ["Дашням", "G"],
+  ["Дуламэаяа", "F"], ["Нанжидсүрэн", "G"], ["Номинзаяа", "C"], ["Нууц-Эрдэнэ", "G"], ["Отгонбаяр", "F"],
+  ["Пүрэвсүрэн", "F"], ["Сарнай", "F"], ["Саруул", "G"], ["Сугармаа", "G"], ["Уранболор", "G"],
+  ["Үүрийнгэгээ", "G"], ["Үүрцайх", "G"], ["Чимэддолгор", "G"], ["Эрхэмбилэг", "F"],
+];
 const DRAFTS = {
   men: { doc: "main", priv: "private", teams: 6, roster: ROSTER },
-  women: { doc: "women", priv: "private_women", teams: 3,
-    roster: Array.from({ length: WOMEN_SIZE }, (_, i) => ["Player " + (i + 1), "GFC"[i % 3]]) },
+  women: { doc: "women", priv: "private_women", teams: 3, roster: WOMEN_ROSTER },
 };
 const DRAFT_ID = new URLSearchParams(location.search).get("d") === "women" ? "women" : "men";
 const CFG = DRAFTS[DRAFT_ID];
